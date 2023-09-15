@@ -21,10 +21,18 @@ jobs:
             sudo apt install llvm-16 llvm-16-dev llvm-16-tools clang-16 clang-tidy-16 clang-tools-16 libclang-16-dev lld-16
       - name: Build weekly code
         run: |
-          mkdir -p out
           for file in ./week_*/*/*.cpp; do
-            clang++ -std=c++20 -Wall -Wextra -Wpedantic -Wconversion "$file" -o ./out/$(basename "$file" .cpp).o
-          done
+            # Extract the week number and subfolder name from the file path
+            week_folder=$(dirname "$file")
+            week_number=$(basename "$week_folder" | sed 's/week_//')
+            subfolder_name=$(basename "$week_folder")
+
+            # Create the output directory for this week and subfolder if it doesn't exist
+            mkdir -p "./out/week${week_number}_${subfolder_name}"
+
+            # Compile the cpp file and place it in the specified output location
+            clang++ -std=c++20 -Wall -Wextra -Wpedantic -Wconversion "$file" -o "./out/week${week_number}_${subfolder_name}/$(basename "$file" .cpp).o"
+         done
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
